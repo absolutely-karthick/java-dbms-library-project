@@ -1,0 +1,223 @@
+# BookNest – Library Management System (Phase 1)
+
+A robust, console-based Library Management System developed using **Java**, **JDBC**, and **MySQL 8**. BookNest provides an automated solution for managing books, members, and book borrowing/returning transactions with fine calculation and real-time inventory tracking.
+
+---
+
+## 📌 Project Overview
+
+- **Project Name:** BookNest Library Management System
+- **Phase:** Phase 1 – Core Logic, Database Design & Console Interface
+- **Technology Stack:** Java SE, JDBC (Java Database Connectivity), MySQL 8
+- **IDE & Platform:** Visual Studio Code / Windows PowerShell
+- **Architecture:** Layered Architecture (Model-DAO-Service-Controller)
+
+---
+
+## 🏛️ Architecture & Design Pattern
+
+BookNest follows a clean, modular architecture adhering to separation of concerns:
+
+```
++-------------------------------------------------------------+
+|                     Presentation Layer                      |
+|                         (Main.java)                         |
++-------------------------------------------------------------+
+                               |
+                               v
++-------------------------------------------------------------+
+|                        Service Layer                        |
+|                    (LibraryService.java)                    |
+|    - Business Rules, Borrow Validation, Fine Calculation   |
++-------------------------------------------------------------+
+                               |
+                               v
++-------------------------------------------------------------+
+|                   Data Access Layer (DAO)                   |
+|          (BookDAO, MemberDAO, BorrowDAO)                    |
+|    - Prepared Statements, SQL Queries, CRUD Operations      |
++-------------------------------------------------------------+
+                               |
+                               v
++-------------------------------------------------------------+
+|                      Database Layer                         |
+|         (Database_connection.java -> MySQL 8.0)             |
++-------------------------------------------------------------+
+```
+
+### Component Roles:
+1. **Model Layer (`Book.java`, `Member.java`, `BorrowRecord.java`):** Encapsulates core business entities and their state.
+2. **Data Access Object (DAO) Layer (`BookDAO.java`, `MemberDAO.java`, `BorrowDAO.java`):** Handles all low-level SQL database transactions using parameterized `PreparedStatement` to ensure security against SQL injection.
+3. **Service Layer (`LibraryService.java`):** Implements business workflows such as book issuance verification, inventory deduction, return processing, days kept calculation, and fine assessment.
+4. **Presentation Layer (`Main.java`):** Interactive console interface with robust input validation and menu navigation.
+5. **Database Connection (`Database_connection.java`):** Centralized JDBC connection management using `DriverManager`.
+
+---
+
+## ✨ Features
+
+- **Book Management:**
+  - Add new books with ID, title, author, and initial total copy count.
+  - View all registered books with total and available copy counts.
+  - Search books by title or keyword.
+- **Member Management:**
+  - Register new library members with unique member IDs.
+  - View all registered members.
+- **Circulation & Transactions:**
+  - **Issue Book:** Verifies book availability and member existence; decrements available copies upon issuance.
+  - **Return Book:** Computes elapsed days, applies fine if returned after the due date, and increments available copies.
+  - **Borrowing Records:** View historical and active borrowing logs.
+
+---
+
+## 📂 Project Structure
+
+```text
+library_management_jvdb/
+│
+├── .gitignore                  # Git ignore rules for compiled classes & local configs
+├── .vscode/
+│   └── settings.json           # VS Code Java classpath & source path settings
+│
+├── database/
+│   └── booknest.sql            # Database schema, tables, and integrity constraints
+│
+├── lib/
+│   └── mysql-connector-j-26.7.0.jar  # MySQL JDBC Driver library
+│
+├── out/                        # Compiled bytecode (.class files)
+│   ├── Book.class
+│   ├── BookDAO.class
+│   ├── BorrowDAO.class
+│   ├── BorrowRecord.class
+│   ├── Database_connection.class
+│   ├── LibraryService.class
+│   ├── Main.class
+│   ├── Member.class
+│   ├── MemberDAO.class
+│   ├── TestBookDAO.class
+│   ├── TestBorrowDAO.class
+│   ├── TestConnection.class
+│   ├── TestLibraryService.class
+│   ├── TestMemberDAO.class
+│   └── TestReturnBook.class
+│
+├── src/                        # Production Java source files
+│   ├── Book.java               # Book entity model
+│   ├── BookDAO.java            # DAO for book CRUD operations
+│   ├── BorrowDAO.java          # DAO for borrowing transactions
+│   ├── BorrowRecord.java       # Borrowing record entity model
+│   ├── Database_connection.java# Central JDBC connection utility
+│   ├── LibraryService.java     # Business logic & transaction service
+│   ├── Main.java               # Main entry point & console UI
+│   ├── Member.java             # Member entity model
+│   └── MemberDAO.java          # DAO for member CRUD operations
+│
+├── test/                       # Standalone integration test programs
+│   ├── TestBookDAO.java        # Validates BookDAO operations
+│   ├── TestBorrowDAO.java      # Validates BorrowDAO operations
+│   ├── TestConnection.java     # Validates MySQL database connectivity
+│   ├── TestLibraryService.java # Validates business service routines
+│   ├── TestMemberDAO.java      # Validates MemberDAO operations
+│   └── TestReturnBook.java     # Validates return flow and fine logic
+│
+└── README.md                   # Project documentation
+```
+
+---
+
+## ⚙️ Prerequisites
+
+1. **Java Development Kit (JDK):**
+   - JDK 17 or higher (tested with JDK 26).
+   - Ensure `java` and `javac` are available in your system `PATH`.
+2. **MySQL Server:**
+   - MySQL Server 8.0 or higher running on `localhost:3306`.
+3. **MySQL Connector/J:**
+   - Bundled inside the `lib/` directory (`mysql-connector-j-26.7.0.jar`).
+4. **Visual Studio Code (Optional):**
+   - Recommended extension: *Extension Pack for Java* (by Microsoft).
+
+---
+
+## 🗄️ Database Setup
+
+1. Open your terminal or MySQL Command Line Client.
+2. Log in to MySQL as `root`:
+   ```powershell
+   mysql -u root -p
+   ```
+3. Execute the SQL schema script provided in `database/booknest.sql`:
+   ```sql
+   SOURCE C:/Users/manim/Downloads/PROJECTS/BN/library_management_jvdb/database/booknest.sql;
+   ```
+   *(Or import via PowerShell: `Get-Content database\booknest.sql | mysql -u root -p`)*
+
+### Database Schema Overview:
+- **`books`:**
+  - `book_id` (VARCHAR(20), Primary Key)
+  - `title` (VARCHAR(150), Not Null)
+  - `author` (VARCHAR(100), Not Null)
+  - `total_copies` (INT, CHECK >= 0)
+  - `available_copies` (INT, CHECK >= 0, CHECK <= total_copies)
+- **`members`:**
+  - `member_id` (VARCHAR(20), Primary Key)
+  - `name` (VARCHAR(100), Not Null)
+- **`borrow_records`:**
+  - `record_id` (INT, Auto Increment Primary Key)
+  - `member_id` (VARCHAR(20), Foreign Key -> `members.member_id`)
+  - `book_id` (VARCHAR(20), Foreign Key -> `books.book_id`)
+  - `issue_date` (DATE, Not Null)
+  - `return_date` (DATE, Nullable)
+  - `days_kept` (INT, Default 0)
+  - `fine` (DECIMAL(10,2), Default 0.00)
+
+---
+
+## 🔑 Database Configuration
+
+Verify your MySQL credentials inside [`src/Database_connection.java`](file:///c:/Users/manim/Downloads/PROJECTS/BN/library_management_jvdb/src/Database_connection.java):
+
+```java
+private static final String URL = "jdbc:mysql://localhost:3306/booknest";
+private static final String USERNAME = "root";
+private static final String PASSWORD = "your_mysql_password";
+```
+
+---
+
+## 🚀 How to Compile and Run
+
+Always run these commands from the **project root directory** (`library_management_jvdb`):
+
+### 1. Compile Production Code
+Compile all source files from `src/` and output `.class` files into `out/`:
+```powershell
+javac -cp ".;lib\*" -d out src\*.java
+```
+
+### 2. Run the Application
+Launch the BookNest console application:
+```powershell
+java -cp "out;lib\*" Main
+```
+
+### 3. Compile Standalone Tests (Optional)
+To compile test scripts into `out/`:
+```powershell
+javac -cp ".;out;lib\*" -d out test\*.java
+```
+
+### 4. Run Connectivity Test (Safe / Non-mutating)
+Verify database connection without modifying any database records:
+```powershell
+java -cp "out;lib\*" TestConnection
+```
+
+---
+
+## 🔮 Roadmap / Phase 2
+
+- **Graphical User Interface (GUI):** Build a responsive desktop UI using Java Swing.
+- **Role-based Authentication:** Separate Librarian and Member logins.
+- **Advanced Filtering & Reporting:** Overdue alerts, PDF receipt generation, and statistical dashboards.
